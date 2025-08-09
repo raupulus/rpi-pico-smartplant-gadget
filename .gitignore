@@ -107,7 +107,9 @@ celerybeat.pid
 # Environments
 .env
 .env.py
+.env_back.py
 env.py
+env_back.py
 .venv
 .env/
 venv/
@@ -143,3 +145,6 @@ dmypy.json
 
 # Systems
 .DS_Store
+
+# Tmp
+/tmp
