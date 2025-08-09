@@ -1,93 +1,261 @@
-# rpi-pico-smartplant-gadget
+# Proyecto SmartPlant (Hardware con Raspberry Pi Pico)
+
+## Análisis de Pines para Configuración Mixta
+
+### Configuración 1 Planta
+
+- **LEDs por planta**: 3 pines GPIO (Rojo/Verde/Amarillo)
+- **I2C (BME280)**: 2 pines GPIO
+- **Sensor humedad suelo**: 1 pin ADC (analógico interno)
+- **Monitorización batería**: 1 pin ADC (opcional)
+- **LED sistema encendido**: 1 pin GPIO
+- **LED subida API**: 1 pin GPIO
+
+**Total 1 planta**: 8 pines GPIO + 2 pines ADC = **10 pines totales** 
+### Configuración 8 Plantas
+
+- **LEDs por planta**: 2 pines GPIO × 8 = 16 pines GPIO (Verde/Rojo)
+- **I2C (BME280 + ADS1115)**: 2 pines GPIO
+- **Monitorización batería**: 1 pin ADC
+- **LED sistema encendido**: 1 pin GPIO
+- **LED subida API**: 1 pin GPIO
+
+**Total 8 plantas**: 20 pines GPIO + 1 pin ADC = **21 pines totales** 
+
+# Sistema de Monitorización IoT para Plantas con Raspberry Pi Pico
+
+## Descripción del Proyecto
+
+Sistema de monitorización inteligente para el cuidado de plantas basado en Raspberry Pi Pico con MicroPython. El dispositivo recopila datos ambientales y de humedad del suelo, proporcionando indicadores visuales del estado de salud de las plantas y comunicación con API externa para configuración y almacenamiento de datos.
+
+## Especificaciones de Hardware
+
+### Componentes Principales
+- **Microcontrolador**: Raspberry Pi Pico (RP2040)
+- **Sensor de humedad del suelo**: Sensor capacitivo resistente a la corrosión (GND, VCC, A0)
+- **Sensor ambiental**: Bosch BME280 (temperatura, humedad relativa, presión atmosférica)
+- **Indicadores de planta**: LEDs individuales para estado de cada planta
+- **LEDs de sistema**: LED de encendido y LED de comunicación API
+- **Conectores**: JST para conexiones modulares
+
+### Componentes según Configuración
+
+#### Configuración Individual (1 Planta)
+- **LEDs por planta**: 3 LEDs individuales (Rojo/Verde/Amarillo)
+- **Sensor de humedad**: ADC interno de la Raspberry Pi Pico
+- **Conectores JST**:
+  - 4 pines para I2C (VCC, GND, SDA, SCL)
+  - 3 pines para sensor analógico (VCC, GND, A0)
+  - 5 pines para LEDs de planta (GND, R, G, Y, VCC)
+  - 3 pines para LEDs de sistema (GND, Power, API, VCC)
+
+#### Configuración Múltiple (hasta 8 Plantas)
+- **LEDs por planta**: 2 LEDs individuales (Verde/Rojo)
+  - Verde: Condiciones óptimas
+  - Rojo: Requiere atención (incluye advertencia y crítico)
+- **ADC externo**: Módulo ADS1115 de 16 bits vía I2C
+- **Conectores JST**:
+  - 4 pines para I2C principal (VCC, GND, SDA, SCL)
+  - 3 pines por sensor (hasta 4 por ADS1115)
+  - 4 pines para LEDs por planta (GND, G, R, VCC)
+  - 3 pines para LEDs de sistema (GND, Power, API, VCC)
+
+### Componentes de Sistema
+- **LED de encendido**: Indica que el microcontrolador está funcionando
+- **LED de comunicación API**: Indica actividad de subida/descarga de datos
+- **Monitorización de batería**: Circuito divisor de tensión (opcional)
+- **Panel solar**: Módulo de 80x50mm o 50x30mm para alimentación autónoma (opcional)
+
+## Asignación de Pines (Pinout)
+
+### Configuración Individual (1 Planta)
+
+Comunicación:
+
+- BME280 (I2C): SDA → GPIO 4, SCL → GPIO 5
+
+Sensores:
+
+- Sensor humedad suelo: A0 → GPIO 26 (ADC0)
+- Monitorización batería: GPIO 27 (ADC1) - Opcional
+
+LEDs de Planta:
+
+- LED Verde (Planta): GPIO 16
+- LED Amarillo (Planta): GPIO 17
+- LED Rojo (Planta): GPIO 18
+
+LEDs de Sistema:
+
+- LED Encendido: GPIO 19
+- LED Comunicación API: GPIO 20
+
+Pines utilizados: 8 GPIO + 2 ADC
+
+| Función                 | Componente         | Pin Pico       | Tipo           |
+| ----------------------- | ------------------ | -------------- | -------------- |
+| I2C SDA                 | BME280             | GPIO 4         | I2C SDA        |
+| I2C SCL                 | BME280             | GPIO 5         | I2C SCL        |
+| Sensor humedad suelo    | Sensor capacitivo  | GPIO 26 (ADC0) | ADC            |
+| Monitorización batería  | Divisor de tensión | GPIO 27 (ADC1) | ADC (opcional) |
+| LED Verde (planta)      | LED                | GPIO 16        | GPIO           |
+| LED Amarillo (planta)   | LED                | GPIO 17        | GPIO           |
+| LED Rojo (planta)       | LED                | GPIO 18        | GPIO           |
+| LED Encendido (sistema) | LED                | GPIO 19        | GPIO           |
+| LED Comunicación API    | LED                | GPIO 20        | GPIO           |
+
+### Configuración Múltiple (8 Plantas)
+
+Comunicación:
+
+- BME280 + ADS1115 (I2C): SDA → GPIO 4, SCL → GPIO 5
+
+Sensores:
+
+- Sensores humedad: A0-A3 del ADS1115 (plantas 1-4)
+- Segundo ADS1115: A0-A3 (plantas 5-8) - Opcional
+- Monitorización batería: GPIO 26 (ADC0)
+
+LEDs de Plantas (Verde/Rojo):
+
+- Planta 1: GPIO 8 (G), GPIO 9 (R)
+- Planta 2: GPIO 10 (G), GPIO 11 (R)
+- Planta 3: GPIO 12 (G), GPIO 13 (R)
+- Planta 4: GPIO 14 (G), GPIO 15 (R)
+- Planta 5: GPIO 16 (G), GPIO 17 (R)
+- Planta 6: GPIO 18 (G), GPIO 19 (R)
+- Planta 7: GPIO 20 (G), GPIO 21 (R)
+- Planta 8: GPIO 22 (G), GPIO 27 (R)
+
+LEDs de Sistema:
+
+- LED Encendido: GPIO 6
+- LED Comunicación API: GPIO 7
+
+Pines utilizados: 20 GPIO + 1 ADC
+
+|Función|Componente|Pin Pico|Tipo|
+|---|---|---|---|
+|I2C SDA|BME280 + ADS1115|GPIO 4|I2C SDA|
+|I2C SCL|BME280 + ADS1115|GPIO 5|I2C SCL|
+|Monitorización batería|Divisor de tensión|GPIO 26 (ADC0)|ADC|
+|LED Encendido (sistema)|LED|GPIO 6|GPIO|
+|LED Comunicación API|LED|GPIO 7|GPIO|
 
 
+|Planta|LED Verde (GPIO)|LED Rojo (GPIO)|
+|---|---|---|
+|1|GPIO 8|GPIO 9|
+|2|GPIO 10|GPIO 11|
+|3|GPIO 12|GPIO 13|
+|4|GPIO 14|GPIO 15|
+|5|GPIO 16|GPIO 17|
+|6|GPIO 18|GPIO 19|
+|7|GPIO 20|GPIO 21|
+|8|GPIO 22|GPIO 27|
 
-## Getting started
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Sistema de Indicadores Visuales
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+### LEDs de Planta
 
-## Add your files
+#### Configuración Individual (3 LEDs)
+- **Verde**: Condiciones óptimas (humedad del suelo en rango ideal)
+- **Amarillo**: Condiciones de advertencia (fuera del rango óptimo)
+- **Rojo**: Condiciones críticas (requiere intervención inmediata)
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+#### Configuración Múltiple (2 LEDs)
+- **Verde**: Condiciones óptimas (humedad del suelo en rango ideal)
+- **Rojo**: Requiere atención (combina advertencia y crítico)
+- **Alternado Verde/Rojo**: Condiciones de advertencia (parpadeo)
+- **Rojo fijo**: Condiciones críticas
 
-```
-cd existing_repo
-git remote add origin https://gitlab.com/raupulus/rpi-pico-smartplant-gadget.git
-git branch -M main
-git push -uf origin main
-```
+### LEDs de Sistema
+- **LED Encendido**: 
+  - Encendido fijo: Sistema funcionando correctamente
+  - Parpadeo lento: Modo de bajo consumo
+  - Apagado: Sistema sin alimentación o error crítico
 
-## Integrate with your tools
+- **LED Comunicación API**:
+  - Parpadeo rápido: Comunicando con API
+  - Encendido breve: Datos enviados correctamente
+  - Parpadeo lento: Error de comunicación
+  - Apagado: Sin actividad de red
 
-- [ ] [Set up project integrations](https://gitlab.com/raupulus/rpi-pico-smartplant-gadget/-/settings/integrations)
+## Funcionalidades del Sistema
 
-## Collaborate with your team
+### Monitorización de Sensores
+- **Humedad del suelo**: Lectura cada 30 minutos (configurable vía API)
+- **Condiciones ambientales**: Temperatura, humedad relativa y presión atmosférica
+- **Estado de batería**: Monitorización del nivel de carga (opcional)
+- **Calibración automática**: Ajuste de rangos según tipo de planta
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+### Comunicación API
+- **Configuración inicial**: Descarga de parámetros específicos del dispositivo
+- **Sincronización de datos**: Envío de lecturas con identificador único (device_id)
+- **Gestión de errores**: Reintento automático en caso de fallos de comunicación
+- **Configuración remota**: Actualización de intervalos de lectura y rangos de alerta
+- **Indicación visual**: LED de comunicación muestra estado de conectividad
 
-## Test and Deploy
+### Estados de Funcionamiento
 
-Use the built-in continuous integration in GitLab.
+#### Secuencia de Inicio
+1. **LED Encendido** se activa (sistema iniciando)
+2. **LED API** parpadea durante descarga de configuración
+3. **LEDs de plantas** realizan secuencia de prueba
+4. Sistema entra en modo de monitorización normal
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+#### Ciclo de Monitorización
+1. Lectura de sensores (LED Encendido parpadea)
+2. Procesamiento de datos y actualización de LEDs de plantas
+3. Envío a API (LED API activo)
+4. Período de espera hasta próximo ciclo
 
-***
+## Consideraciones Técnicas
 
-# Editing this README
+### Gestión de Energía
+- LEDs de sistema optimizados para bajo consumo
+- Reducción de brillo en modo nocturno (configurable)
+- Modo hibernación con indicadores mínimos
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+### Escalabilidad
+- **1 planta**: Máximo detalle en indicadores (3 estados)
+- **2-8 plantas**: Indicadores simplificados pero eficientes (2 estados + parpadeo)
+- Configuración automática según número de plantas detectadas
 
-## Suggestions for a good README
+### Robustez del Sistema
+- LEDs de sistema permiten diagnóstico visual sin necesidad de herramientas
+- Secuencias de parpadeo para diferentes tipos de error
+- Recuperación automática de errores de comunicación
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+## Configuraciones Recomendadas
 
-## Name
-Choose a self-explaining name for your project.
+### Para Uso Doméstico (1-2 plantas)
+- Configuración individual con 3 LEDs por planta
+- Máxima precisión en indicadores visuales
+- Ideal para plantas de interior de alto valor
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+### Para Jardín o Huerto (3-8 plantas)
+- Configuración múltiple con 2 LEDs por planta
+- Monitorización eficiente de múltiples plantas
+- Sistema de alertas centralizado
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+## Propuestas de Mejora Futura
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+### Hardware
+- **Buzzer opcional**: Alertas sonoras para condiciones críticas
+- **Sensor de luz**: Ajuste automático de brillo de LEDs
+- **Display OLED**: Información detallada local (alternativa a múltiples LEDs)
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+### Software
+- **Patrones de parpadeo personalizables**: Diferentes secuencias según preferencias
+- **Modo silencioso**: Desactivación de LEDs durante horas nocturnas
+- **Diagnóstico automático**: Detección de LEDs defectuosos
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+## Notas de Implementación
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+La elección entre configuración individual o múltiple debe realizarse al inicio del proyecto según las necesidades específicas:
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+- **Jardines pequeños/plantas premium**: Configuración individual
+- **Huertos/jardines extensos**: Configuración múltiple
+- **Uso mixto**: Posibilidad de combinar ambas configuraciones en proyectos futuros
