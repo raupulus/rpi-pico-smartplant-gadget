@@ -1,0 +1,19 @@
+{
+  "title": "Fase 6: Sistema de LEDs (planta y sistema): estados y patrones",
+  "body": "Definir e implementar la lógica de LEDs para planta (2–3 LEDs según configuración) y LEDs de sistema (Power/API). Incluir patrones de parpadeo y estados descritos en la documentación.",
+  "labels": ["leds", "ui", "fase-6"],
+  "priority": "media",
+  "status": "todo",
+  "acceptance_criteria": [
+    "Estados por planta: óptimo, advertencia, crítico (2 o 3 LEDs)",
+    "Patrones definidos para sistema: Power (fijo/bajo consumo), API (actividad/errores)",
+    "Documentación en docs/operation.md actualizada con estados y ejemplos"
+  ],
+  "tasks": [
+    {"description": "Implementar controlador de LEDs por planta", "done": false},
+    {"description": "Implementar controlador LEDs de sistema (Power/API)", "done": false},
+    {"description": "Sincronizar estados con lectura de sensores y API", "done": false},
+    {"description": "Actualizar documentación", "done": false}
+  ],
+  "created_at": "2025-08-09T22:15:00"
+}

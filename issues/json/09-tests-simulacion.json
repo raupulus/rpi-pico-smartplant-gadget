@@ -1,0 +1,18 @@
+{
+  "title": "Fase 9: Pruebas y simulación (mocks/harness básico)",
+  "body": "Preparar un entorno de pruebas básico para validar lectura de sensores, normalización y lógica de LEDs sin hardware real (mocks o simulación simple).",
+  "labels": ["tests", "quality", "fase-9"],
+  "priority": "media",
+  "status": "todo",
+  "acceptance_criteria": [
+    "Mocks para ADC interno y ADS1115",
+    "Pruebas de normalización (0–100%) y umbrales",
+    "Pruebas de mapeo de estados a LEDs"
+  ],
+  "tasks": [
+    {"description": "Diseñar interfaces para permitir mocks en sensores", "done": false},
+    {"description": "Crear datos de prueba y casos de borde", "done": false},
+    {"description": "Documentar cómo ejecutar las pruebas (README/docs)", "done": false}
+  ],
+  "created_at": "2025-08-09T22:15:00"
+}

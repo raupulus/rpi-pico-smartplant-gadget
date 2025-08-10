@@ -1,0 +1,20 @@
+{
+  "title": "Fase 7: Gestión de energía y modos (normal, bajo consumo, hibernación)",
+  "body": "Implementar políticas de ahorro energético: reducción de brillo/actividad de LEDs, intervalos de lectura ajustables, y modo hibernación con indicadores mínimos.",
+  "labels": ["energia", "power", "low-power", "fase-7"],
+  "priority": "media",
+  "status": "todo",
+  "acceptance_criteria": [
+    "Modo bajo consumo reduce actividad de LEDs y frecuencia de actualización",
+    "Hibernación desactiva casi todo excepto un latido mínimo o nada",
+    "Parámetros configurables vía API o env.py (intervalos, brillo)",
+    "Documentado en docs/operation.md y docs/architecture.md"
+  ],
+  "tasks": [
+    {"description": "Definir flags/modos de energía en System", "done": false},
+    {"description": "Reducir brillo/patrones de LED en bajo consumo", "done": false},
+    {"description": "Programar intervalos más largos de lectura/envío", "done": false},
+    {"description": "Actualizar documentación", "done": false}
+  ],
+  "created_at": "2025-08-09T22:15:00"
+}

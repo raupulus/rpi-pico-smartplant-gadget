@@ -1,0 +1,20 @@
+{
+  "title": "Fase 3: Integración ADS1115 (1 unidad) para 1–4 plantas",
+  "body": "Integrar lectura de humedad de suelo utilizando un ADS1115 por I2C (hasta 4 canales). Configurar dirección, ganancia y tasa de muestreo. Mapear cada canal a una planta y normalizar la lectura.",
+  "labels": ["hardware", "sensor", "ads1115", "i2c", "fase-3"],
+  "priority": "alta",
+  "status": "todo",
+  "acceptance_criteria": [
+    "Detectar ADS1115 en I2C y leer A0–A3",
+    "Normalizar lecturas a porcentaje (0–100%) con calibración",
+    "Selección de ganancia adecuada a rango de sensores",
+    "Documentación actualizada en docs/hardware.md y docs/pinout.md"
+  ],
+  "tasks": [
+    {"description": "Inicializar I2C y detectar dirección del ADS1115", "done": false},
+    {"description": "Implementar lectura de canal y normalización", "done": false},
+    {"description": "Configurar mapa canal→planta", "done": false},
+    {"description": "Actualizar documentación relacionada", "done": false}
+  ],
+  "created_at": "2025-08-09T22:15:00"
+}

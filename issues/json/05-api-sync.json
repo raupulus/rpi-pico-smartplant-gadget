@@ -1,0 +1,20 @@
+{
+  "title": "Fase 5: Sincronización con API (configuración + envío)",
+  "body": "Implementar la comunicación con la API: descarga de configuración al inicio y periódicamente; envío de lecturas (device, plants, system). Manejo de reintentos y estados de LED API.",
+  "labels": ["api", "network", "fase-5"],
+  "priority": "alta",
+  "status": "todo",
+  "acceptance_criteria": [
+    "get_data_from_api() obtiene configuración y actualiza sistema/plants",
+    "send_to_api() envía payload conforme a docs/api.md y procesa respuesta",
+    "Reintentos con backoff simple ante fallo de red",
+    "LED de API refleja actividad/errores según docs/operation.md"
+  ],
+  "tasks": [
+    {"description": "Implementar cliente API (headers, token, paths)", "done": false},
+    {"description": "Definir payload y parseo de respuesta", "done": false},
+    {"description": "Agregar control de errores y reintentos", "done": false},
+    {"description": "Actualizar documentación (docs/api.md)", "done": false}
+  ],
+  "created_at": "2025-08-09T22:15:00"
+}

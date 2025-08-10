@@ -1,0 +1,19 @@
+{
+  "title": "Fase 4: Integración doble ADS1115 para 4–8 plantas",
+  "body": "Permitir el uso simultáneo de dos ADS1115 por I2C para ampliar a 8 entradas analógicas. Gestionar direcciones I2C, inicialización y lectura coordinada de canales.",
+  "labels": ["hardware", "sensor", "ads1115", "i2c", "fase-4"],
+  "priority": "alta",
+  "status": "todo",
+  "acceptance_criteria": [
+    "Detección de dos ADS1115 en el bus con direcciones distintas",
+    "Lectura correcta y mapeo de A0–A3 de cada ADC a plantas 1–8",
+    "Normalización y calibración por canal",
+    "Documentación de cableado y direcciones en docs/hardware.md y docs/pinout.md"
+  ],
+  "tasks": [
+    {"description": "Configurar y escanear bus I2C para dos dispositivos", "done": false},
+    {"description": "Implementar abstracción para múltiples ADCs", "done": false},
+    {"description": "Actualizar documentación", "done": false}
+  ],
+  "created_at": "2025-08-09T22:15:00"
+}

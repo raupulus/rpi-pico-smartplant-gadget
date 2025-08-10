@@ -1,0 +1,19 @@
+{
+  "title": "Fase 1: Estructura de documentación y organización inicial",
+  "body": "Crear una documentación profesional en la carpeta docs/ a partir del contenido existente en README.md. Preparar un README reducido que enlace a la documentación. Establecer la hoja de ruta inicial.",
+  "labels": ["roadmap", "documentation", "fase-1"],
+  "priority": "alta",
+  "status": "todo",
+  "acceptance_criteria": [
+    "docs/index.md con índice general",
+    "docs/overview.md, hardware.md, pinout.md, architecture.md, operation.md, setup.md, requeriments.md, api.md, env.md completos",
+    "docs/roadmap.md con fases",
+    "README.md con enlaces a docs/"
+  ],
+  "tasks": [
+    {"description": "Crear páginas base en docs/ y mover contenido del README", "done": false},
+    {"description": "Reducir README a landing que enlace a docs", "done": false},
+    {"description": "Revisar enlaces internos y rutas de imágenes", "done": false}
+  ],
+  "created_at": "2025-08-09T22:15:00"
+}

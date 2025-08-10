@@ -1,0 +1,18 @@
+{
+  "title": "Fase 2: Lectura de humedad con ADC interno (1 planta)",
+  "body": "Implementar la lectura del sensor de humedad de suelo usando el ADC interno de la Raspberry Pi Pico. Añadir calibración básica y normalización a porcentaje.",
+  "labels": ["hardware", "sensor", "adc-interno", "fase-2"],
+  "priority": "alta",
+  "status": "todo",
+  "acceptance_criteria": [
+    "Función que lee ADC interno y devuelve valor normalizado (0–100%)",
+    "Documentar pines y límites de tensión en docs/pinout.md y docs/hardware.md",
+    "Calibración mínima configurable por planta"
+  ],
+  "tasks": [
+    {"description": "Leer pin ADC y mapear a 0–100%", "done": false},
+    {"description": "Añadir parámetros de calibración (seco/húmedo)", "done": false},
+    {"description": "Actualizar docs/operation.md con interpretación", "done": false}
+  ],
+  "created_at": "2025-08-09T22:15:00"
+}

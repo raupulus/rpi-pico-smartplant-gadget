@@ -1,0 +1,18 @@
+{
+  "title": "Fase 8: Configuración y seguridad (env.py, plantillas, buenas prácticas)",
+  "body": "Formalizar el manejo de configuración: plantilla .env.example.py, documentación de variables, y recomendaciones de seguridad (no commitear credenciales).",
+  "labels": ["config", "security", "docs", "fase-8"],
+  "priority": "media",
+  "status": "todo",
+  "acceptance_criteria": [
+    "Plantilla .env.example.py creada (sin secretos)",
+    "docs/env.md documenta todas las variables",
+    "Advertencias claras de seguridad en README/docs"
+  ],
+  "tasks": [
+    {"description": "Crear .env.example.py sin datos sensibles", "done": false},
+    {"description": "Actualizar docs/env.md y README con enlaces", "done": false},
+    {"description": "Verificar que env.py real está gitignored (si aplica)", "done": false}
+  ],
+  "created_at": "2025-08-09T22:15:00"
+}

@@ -1,0 +1,18 @@
+{
+  "title": "Fase 10: Automatización mínima/Release (scripts utilitarios)",
+  "body": "Preparar scripts/utilidades para automatizar tareas básicas: publicación de issues a plataforma de seguimiento, empaquetado/copia de firmware a la Pico, y checklist de release.",
+  "labels": ["automation", "release", "scripts", "fase-10"],
+  "priority": "baja",
+  "status": "todo",
+  "acceptance_criteria": [
+    "Script para publicar issues JSON (issues/json/*.json) a la plataforma objetivo (placeholder)",
+    "Guía de empaquetado/copia de src/ a la Pico",
+    "Checklist de release documentado en docs/roadmap.md o README"
+  ],
+  "tasks": [
+    {"description": "Definir formato común de issues JSON y validación", "done": false},
+    {"description": "Completar scripts en issues/*.py o documentar su uso", "done": false},
+    {"description": "Agregar sección de release en la documentación", "done": false}
+  ],
+  "created_at": "2025-08-09T22:15:00"
+}
