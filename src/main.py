@@ -2,6 +2,8 @@ import gc
 from time import sleep_ms
 from Models.Api import Api
 from Models.RpiPico import RpiPico
+import machine
+import ubinascii
 
 # Importo variables de entorno
 import env
@@ -49,21 +51,24 @@ address = 0x03 # Dirección de un dispositivo i2c
 print('Dispositivos encontrados por I2C:', i2c0.scan())
 
 # Ejemplo asociando un callback al recibir +3.3v en el gpio 2
-#rpi.set_callback_to_pin(2, "LOW", tu_callback)
-rpi.set_callback_to_pin(2, lambda p: print("Se ejecuta el callback"), "LOW")
+# rpi.set_callback_to_pin(2, "LOW", tu_callback)
+# rpi.set_callback_to_pin(2, lambda p: print("Se ejecuta el callback"), "LOW")
 
 # Ejemplo leyendo batería externa (¡Cuidado! usa divisor de tensión, max 3,3v)
-rpi.set_external_battery(28)
+rpi.set_external_battery(26)
 rpi.read_external_battery()
 
 sleep_ms(200)
 
 # Preparo la instancia para la comunicación con la API
-api = Api(controller=rpi, url=env.API_URL, path=env.API_PATH,
-          token=env.API_TOKEN, device_id=env.DEVICE_ID, debug=env.DEBUG)
+# api = Api(controller=rpi, url=env.API_URL, path=env.API_PATH, token=env.API_TOKEN, device_id=env.DEVICE_ID, debug=env.DEBUG)
 
 
 # Ejemplo sincronizando reloj RTC
+# TODO: Esto solo se hace si hay wifi
+# TODO: Antes de sincronizar el RTC, se debe obtener la hora de la API o la
+#  zona horaria local que vendrá de la configuración de la api.
+"""
 sleep_ms(1000)
 
 while not rpi.sync_rtc_time():
@@ -75,7 +80,7 @@ while not rpi.sync_rtc_time():
 
 # Pausa preventiva al desarrollar (ajustar, pero si usas dos hilos puede ahorrar tiempo por bloqueos de hardware ante errores)
 sleep_ms(3000)
-
+"""
 
 def thread1 ():
     """
@@ -103,15 +108,45 @@ def thread0 ():
         print('')
         print('Inicia hilo principal (thread0)')
 
+    print("Batería externa:", rpi.read_external_battery())
+    print("Temperatura raspberry pi pico:", str(rpi.get_cpu_temperature()))
 
-    #print("Batería externa:", rpi.read_external_battery())
+    # ID único del chip como bytes
+    unique_id = machine.unique_id()
 
-    print('')
-    print('Termina el primer ciclo del hilo 0')
-    print('')
+    # Convierto a hexadecimal para usar como string
+    unique_id_hex = ubinascii.hexlify(unique_id).decode()
 
-    sleep_ms(10000)
+    print(f"ID único del chip rpi pico: {unique_id_hex}")
+    print(f"ID único (bytes): {unique_id}")
 
+    rpi.on(16)
+    sleep_ms(2000)
+    rpi.off(16)
+    rpi.on(17)
+    sleep_ms(2000)
+    rpi.off(17)
+    rpi.on(18)
+    sleep_ms(2000)
+    rpi.off(18)
+    rpi.on(19)
+    rpi.on(20)
+    rpi.on(21)
+
+    sleep_ms(2000)
+    rpi.off(19)
+    rpi.off(20)
+    rpi.off(21)
+
+    # Resistencias led RGB
+    # Rojo y azul 680R
+    # Verde 20k
+
+    print("")
+    print("Termina ciclo del hilo 0")
+    print("")
+
+    # sleep_ms(10000)
 
 while True:
     try:

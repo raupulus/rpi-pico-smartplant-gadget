@@ -91,6 +91,9 @@ class RpiPico:
         # Defino Pin para el LED integrado
         self.LED_INTEGRATED = Pin("LED", Pin.OUT)
 
+        # Cache para pines configurados como salida
+        self._gpio_out = {}
+
         # Factor de conversión de 16 bits para corregir ADC.
         self.adc_conversion_factor = self.voltage_working / 65535
 
@@ -332,6 +335,23 @@ class RpiPico:
         """
         self.LED_INTEGRATED.off()
 
+    # --- GPIO helpers ---
+    def on(self, pin_number: int) -> None:
+        """Pone a nivel alto (1) el GPIO indicado configurándolo como salida si es necesario."""
+        pin = self._gpio_out.get(pin_number)
+        if pin is None:
+            pin = Pin(pin_number, Pin.OUT)
+            self._gpio_out[pin_number] = pin
+        pin.value(1)
+
+    def off(self, pin_number: int) -> None:
+        """Pone a nivel bajo (0) el GPIO indicado configurándolo como salida si es necesario."""
+        pin = self._gpio_out.get(pin_number)
+        if pin is None:
+            pin = Pin(pin_number, Pin.OUT)
+            self._gpio_out[pin_number] = pin
+        pin.value(0)
+
     def get_cpu_temperature_stats (self) -> dict:
         """
         Obtiene las estadísticas actuales de temperatura.
@@ -365,51 +385,82 @@ class RpiPico:
         Convierte la dirección MAC a formato legible y la devuelve.
         :return:
         """
-        import ubinascii
-
-        return ubinascii.hexlify(network.WLAN().config('mac'), ':').decode()
+        try:
+            import ubinascii
+            wlan = self.wifi or network.WLAN(network.STA_IF)
+            mac = wlan.config('mac') if wlan else None
+            if not mac:
+                return None
+            return ubinascii.hexlify(mac, ':').decode()
+        except Exception:
+            return None
 
     def get_wireless_ssid(self) -> str:
         """
         Devuelve el SSID al que se ha conectado.
         :return:
         """
-        return self.wifi.config('essid')
+        try:
+            return self.wifi.config('essid') if self.wifi else None
+        except Exception:
+            return None
 
     def get_wireless_ip(self) -> str:
         """
         Devuelve la ip de la conexión actual.
         :return:
         """
-        return self.wifi.ifconfig()[0]
+        try:
+            if self.wifi and self.wifi.isconnected():
+                return self.wifi.ifconfig()[0]
+            return None
+        except Exception:
+            return None
 
     def get_wireless_hostname(self) -> str:
         """
         Devuelve el nombre de host en la red.
         :return:
         """
-        return self.wifi.config('hostname')
+        try:
+            if self.wifi:
+                return self.wifi.config('hostname')
+            # Fallback al hostname configurado
+            return self.hostname
+        except Exception:
+            return self.hostname
 
     def get_wireless_txpower(self) -> int:
         """
         Devuelve la potencia de transmisión configurada actualmente por la rpi.
         :return:
         """
-        return self.wifi.config('txpower')
+        try:
+            return self.wifi.config('txpower') if self.wifi else None
+        except Exception:
+            return None
 
     def get_wireless_rssi(self) -> int:
         """
-        Devuelve la potencia de transmisión del router.
+        Devuelve la potencia de señal (RSSI) del punto de acceso.
         :return:
         """
-        return self.wifi.status('rssi')
+        try:
+            if self.wifi and self.wifi.isconnected():
+                return self.wifi.status('rssi')
+            return None
+        except Exception:
+            return None
 
     def get_wireless_channel(self) -> int:
         """
         Devuelve el canal de comunicación con el router.
         :return:
         """
-        return self.wifi.config('channel')
+        try:
+            return self.wifi.config('channel') if self.wifi else None
+        except Exception:
+            return None
 
     def wifi_debug (self) -> None:
         """
