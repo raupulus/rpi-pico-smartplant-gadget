@@ -1,0 +1,12 @@
+[
+  {"name": "bug", "color": "d73a4a", "description": "Bug report"},
+  {"name": "feature", "color": "0e8a16", "description": "New feature"},
+  {"name": "docs", "color": "0075ca", "description": "Documentation"},
+
+  {"name": "status:todo", "color": "cccccc", "description": "To do"},
+  {"name": "status:in-progress", "color": "fbca04", "description": "Work in progress"},
+  {"name": "status:blocked", "color": "d73a4a", "description": "Blocked by dependency or impediment"},
+  {"name": "status:done", "color": "2ea44f", "description": "Completed and verified"},
+
+  {"name": "depends-on", "color": "e4e669", "description": "This issue depends on another"}
+]
