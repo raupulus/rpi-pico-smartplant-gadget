@@ -31,7 +31,8 @@ datos en la respuesta de la api.
     "utc_offset": 3600,
     "sunrise": "07:00",
     "sunset": "19:00",
-    "current_utc": "2025-08-09 15:00" 
+    "current_utc": "2025-08-09 15:00",
+    "outdoor": false
   },
   "plants": [
     {
@@ -51,14 +52,62 @@ datos en la respuesta de la api.
           "end": "18:30"
         }
       ]
+    },
+    {
+      "id": 2,
+      "adc": 1,
+      "name": "Planta 1",
+      "optimal_temperature": 28,
+      "optimal_soil_humidity": 46,
+      "optimal_air_humidity": 70,
+      "prefer_watering_time": [
+        {
+          "start": "11:00",
+          "end": "12:00"
+        },
+        {
+          "start": "15:30",
+          "end": "14:30"
+        }
+      ]
     }
   ],
+  "light": {
+      "start": "06:00",
+      "end": "18:00",
+      "duration": 36000
+  },
   "system": {
     "has_water_pump": false,
-    "has_water_level_sensor": false
+    "has_water_level_sensor": false,
+    "has_light_sensor": false,
+    "low_power_mode": false
   }
 }
 ```
+
+location:
+
+- outdoor: Indica si la planta se encuentra fuera de la casa.
+
+system:
+- has_water_pump: Indica si tiene motor de riego automático
+- has_water_level_sensor: Indica si tiene sensor para nivel de agua, al 
+  tenerlo limita encender motor de riego si el nivel es bajo
+- low_power_mode: Indica si tiene configurado modo bajo consumo. Esto 
+  minimiza tiempos de lecturas en sensores, subidas a la api y los leds 
+  parpadean en lugar de encenderse.
+
+light:
+- start: Hora aproximada de encendido de la iluminación
+- end: Hora de apagado de la iluminación
+- duration: Tiempo en segundos que se debe encender la iluminación
+
+TODO: Plantear si esta configuración interesa guardarla en la memoria del 
+dispositivo. Esto permite usarse sin internet en el futuro manteniendo la misma
+configuración.
+
+
 
 ## Enviando datos
 
@@ -69,11 +118,14 @@ Enviando información a la API
 ```json
 {
   "device": {
-    "device_id": 1,
-    "firmware": "1.25.0",
+    "chip_id": "rpi_pico_w_e661640843114021",
+    "firmware": "1.26.0",
     "hardware": "Raspberry Pi Pico",
+    "temperature": 37,
     "battery": 86,
+    "battery_voltage": 3.9,
     "uptime": 1234567890,
+    "mac_address": "AA:BB:CC:DD:EE:FF",
     "wifi_rssi": -50,
     "wifi_ssid": "SSID",
     "wifi_ip": "192.168.1.100"
@@ -87,6 +139,15 @@ Enviando información a la API
       "soil_humidity": 20,
       "pressure": 20,
       "light": 20
+    },
+    {
+      "id": 2,
+      "adc": 1,
+      "temperature": 20,
+      "humidity": 20,
+      "soil_humidity": 20,
+      "pressure": 20,
+      "light": 20
     }
   ],
   "system": {
@@ -94,6 +155,21 @@ Enviando información a la API
   }
 }
 ```
+
+Device:
+
+- chip_id: Se obtiene del dispositivo, machine.unique_id() en bytes (Se sube 
+  ese valor convertido a hexadecimal como string: ubinascii.hexlify
+  (unique_id).decode()). Esto permite identificar el dispositivo en la API. 
+  Además, se añade delante "rpi_pico_w_" para evitar colisiones entre otros 
+  fabricantes como esp32. Así me aseguro identificarlo en la api de forma única.
+- battery: Indica el porcentaje de batería actual, si es null se ignora ya 
+  que no aplica.
+
+system
+
+- water_level_correct: Indica si hay agua suficiente para riego. Si es null 
+  se ignora ya que no aplica.
 
 ## Example Response
 
