@@ -6,12 +6,12 @@ Esta sección describe el comportamiento operativo del dispositivo, los indicado
 
 ### LEDs de planta
 
-Configuración individual (1 planta, 3 LEDs):
+Configuración individual (1-4 planta, 3 LEDs):
 - Verde: condiciones óptimas (humedad de suelo en rango ideal).
 - Azul: advertencia (fuera del rango óptimo).
 - Rojo: crítico (requiere intervención).
 
-Configuración múltiple (2 LEDs por planta):
+Configuración múltiple (4-8 plantas, 2 LEDs):
 - Verde: condiciones óptimas.
 - Rojo: requiere atención (advertencia o crítico).
 - Alternado Verde/Rojo: advertencia.
@@ -34,7 +34,8 @@ Configuración múltiple (2 LEDs por planta):
 1. LED Encendido se activa (inicialización).
 2. LED API parpadea durante la descarga de configuración.
 3. LEDs de plantas realizan secuencia de prueba.
-4. Entrada en modo de monitorización.
+4. Pausa de 10 segundos.
+5. Entrada en modo de monitorización.
 
 ### Ciclo de monitorización
 1. Lectura de sensores (LED Encendido parpadea).
@@ -44,14 +45,11 @@ Configuración múltiple (2 LEDs por planta):
 
 ## Consideraciones de energía
 - Uso de patrones de parpadeo y reducción de brillo para bajo consumo.
-- Modo hibernación con indicadores mínimos (configurable).
+- Resistencias para leds bajando brillo y consumo.
+- Modo hibernación (deepsleep) con indicadores mínimos (configurable).
 
 ## Escalabilidad operativa
-- 1 planta: indicadores más detallados (3 estados).
-- 2–8 plantas: indicadores simplificados (2 estados + parpadeo).
-- Configuración automática según número de plantas detectadas.
-
-## Robustez y diagnóstico
-- Los LEDs de sistema permiten diagnóstico visual sin herramientas.
-- Secuencias de parpadeo para diferentes tipos de error.
-- Reintentos y recuperación automática ante fallos de comunicación.
+- 1-4 planta: indicadores más detallados (3 estados).
+- 4–8 plantas: indicadores simplificados (2 estados + parpadeo).
+- Configuración automática según número de plantas detectadas (Si tiene 2 
+  módulos ads1115 se utiliza el sistema simplificado).

@@ -1,6 +1,7 @@
 # Visión General
 
-SmartPlant es un sistema de monitorización inteligente para el cuidado de plantas basado en Raspberry Pi Pico y MicroPython. Recopila datos ambientales (temperatura, humedad relativa, presión) y de humedad del suelo, mostrando indicadores visuales (LEDs) del estado de cada planta y sincronizando datos con una API externa.
+SmartPlant es un sistema de monitorización inteligente para el cuidado de plantas basado en Raspberry Pi Pico y MicroPython. 
+Recopila datos ambientales (temperatura, humedad relativa, presión) y de humedad del suelo, mostrando indicadores visuales (LEDs) del estado de cada planta y sincronizando datos con una API externa.
 
 ## Objetivos
 - Monitorizar 1, 1–4 o 4–8 plantas reutilizando el mismo software según el hardware disponible.
@@ -14,6 +15,6 @@ SmartPlant es un sistema de monitorización inteligente para el cuidado de plant
 - 4–8 plantas: usa dos ADC externos ADS1115 por I2C en paralelo.
 
 ## Estado del Proyecto
-El proyecto está en fase de diseño y separación de responsabilidades. El código existente es una plantilla base para MicroPython sobre la que se implementarán las funcionalidades.
+El proyecto está en fase de diseño y separación de responsabilidades. 
 
-Consulta el índice general en docs/index.md para profundizar en cada sección.
+Consulta el índice general en [docs/index.md](docs/index.md) para profundizar en cada sección.

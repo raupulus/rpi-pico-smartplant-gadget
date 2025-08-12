@@ -1,5 +1,11 @@
 # Hardware y Conexiones
 
+
+## TODO: Poner imágenes de referencia que ya las tengo
+## TODO: Preparar ventilador información
+
+
+
 ## Componentes principales
 - Microcontrolador: Raspberry Pi Pico (RP2040)
 - Sensor de humedad del suelo: Sensor capacitivo resistente a la corrosión (GND, VCC, A0)
@@ -21,41 +27,117 @@ Imágenes de referencia:
 - LEDs por planta: 3 (Rojo/Verde/Azul)
 - Sensor de humedad: ADC interno de la Pico
 - Conectores JST típicos:
-  - 4 pines I2C (VCC, GND, SDA, SCL)
-  - 3 pines sensor analógico (VCC, GND, A0)
-  - 5 pines LEDs de planta (GND, R, G, B, VCC)
-  - 3 pines LEDs de sistema (GND, Power, API, VCC)
+  - 2 pines I2C (VCC, GND, SDA, SCL)
+  - 1 pines sensor analógico (VCC, GND, A0)
+  - 3 pines LEDs de planta (GND, R, G, B)
+  - 2 pines LEDs de sistema (GND, Power, API)
 
 ### 1–4 plantas (ADS1115)
-- LEDs por planta: 2–3 según diseño (recomendado 2: Verde/Rojo)
+- LEDs por planta: 3 según diseño (recomendado 2: Verde/Rojo/Azul)
 - ADC externo: ADS1115 (16 bits) por I2C
 - Conectores JST típicos:
-  - 4 pines I2C principal (VCC, GND, SDA, SCL)
-  - 3 pines por sensor (hasta 4 por ADS1115)
-  - 4–5 pines por planta para LEDs
-  - 3 pines LEDs de sistema
+  - 2 pines I2C principal (VCC, GND, SDA, SCL)
+  - 2 pines por sensor (hasta 4 por ADS1115)
+  - 3 pines por planta para LEDs
+  - 2 pines LEDs de sistema
 
 ### 4–8 plantas (doble ADS1115)
 - LEDs por planta: 2 (Verde/Rojo)
 - 2× ADS1115 por I2C
 - Conectores JST típicos:
-  - 4 pines I2C principal (VCC, GND, SDA, SCL)
-  - 3 pines por sensor (hasta 4 por ADS1115)
-  - 4 pines por planta para LEDs
-  - 3 pines LEDs de sistema
+  - 2 pines I2C principal (VCC, GND, SDA, SCL)
+  - 2 pines por sensor (hasta 4 por ADS1115)
+  - 2 pines por planta para LEDs
+  - 2 pines LEDs de sistema
 
 ## Componentes de sistema
 - LED Encendido: indica que el microcontrolador funciona
 - LED Comunicación API: actividad de red (envíos/descargas)
-- Monitorización de batería: divisor de tensión (opcional)
-- Panel solar: módulo 80×50mm o 50×30mm (opcional)
-- Batería 500mah (opcional, en bajo consumo)
+
+## Componentes Opcionales
+- Monitorización de batería: divisor de tensión
+- Panel solar: módulo 80×50mm o 50×30mm
+- Batería 500mah
+- Motor de riego
+- Humidificador
+- Control de luz
+- Batería y placa solar
+- VEML6075 o VEML7000 (I2C) Sensor de luz
+- Ventilador
 
 Consulta el pinout en [pinout.md](pinout.md) para la asignación detallada de pines por configuración.
 
 ---
 
 ## Ejemplos de conexión
+
+## Soil Moisture Sensor Capacitive Resistant to Corrosion
+
+![Sensor de humedad del suelo](images/hardware/sensor-soil-moisture.jpeg)
+
+### Cableado
+
+- Conecta el sensor a GND y VCC.
+- Conecta el sensor a A0.
+- Conecta el sensor a GND y VCC.
+
+### Identificar los buenos y malos sensores
+
+Hay muchos sensores de estos que funcionan bien, pero hay que identificar los buenos y malos.
+
+Para identificarlos hay que mirar 3 cosas:
+- Chip TL555C o 
+- Tiene regulador de tensión 668 (Para poder usarse a 3,3v y tener medidas 
+  estables)
+- Soldado a resistencia de 1M (R4 normalmente) para estabilizar lecturas 
+  rápidas.
+
+Hay muchas variantes que funcionan mal, sobre todos las que tienen el chip 
+NE555 que da muchos problemas de lectura y no es compatible con 3,3v.
+
+De todas formas, si ya tienes un sensor falso puedes usarlo con algunas 
+modificaciones que deberás investigar antes de realizarlas pero pueden ir en 
+esta línea:
+
+- Soldar resistencia de 1M entre GND a aOUT
+- Soldar cable entre GND y resistencia de 1M (normalmente R4)
+- Si tienes un NE555 puedes alimentarlo a 5v y poner un divisor de tensión 
+  en la salida para convertirlo a 3,3v o algo menos.
+
+### Ejemplo de chip malo NE555
+
+Este chip necesita ser alimentado a 5v, los estafadores que lo venden ponen 
+que se pueden alimentar a 3,3v, pero no funcionan bien. Dan salida 3,3v en 
+seco por aout pero no tiene corriente para funcionar y no varía en mojado.
+
+En mi caso, las lecturas alimentados a 5v tenían un rango de salida 
+analógica de 3,7v a 2,5v por lo que con un divisor de tensión en la salida 
+pude convertirlas a 3,3v o menos (si compras uno así, pide reembolso 
+inmediatamente... no cuesta nada hacerlos bien y los cobran caro).
+
+Hay 3 opciones viables en mi caso para divisor de tensión:
+
+- **R1 = 2.2kΩ** y **R2 = 8.2kΩ** → Resultado: 2.99V máximo
+- **R1 = 1.8kΩ** y **R2 = 6.8kΩ** → Resultado: 3.01V máximo
+- **R1 = 3.3kΩ** y **R2 = 8.2kΩ** → Resultado: 2.71V máximo (más conservador)
+- **R1 = 2.2kΩ** y **R2 = 6.8kΩ** → Resultado: 2.87V máximo
+
+En mi caso uso la versión de 22k + 68k (2.2k + 6.8k compensando resistencias 
+internas de mi sensor en concreto) que son las que tenía a mano para 
+asegurar salida que pueda leer bien desde el microcontrolador y poder 
+reutilizar este esquema para otros sensores aunque varíe un poco la tensión 
+de salida. Yo los sueldo directamente en el sensor por lo que corto con un 
+cúter la pista de salida analógica y puenteo directamente a la salida de R4.
+
+## BME280
+
+![Sensor BME280](images/hardware/sensor-bosh-bme280-temperatura-humedad-presion.jpeg)
+
+### Cableado
+
+- Conecta el sensor a GND y VCC.
+- Conecta el sensor a SDA y SCL.
+
 
 ### Divisor de tensión (monitorización de batería)
 
@@ -91,7 +173,9 @@ Cableado: GPIO → Resistencia en serie → Ánodo LED; Cátodo → GND (o inver
 
 ### LED RGB de 4 patillas
 
-Si prefieres un LED RGB común en lugar de 3 LEDs individuales, puedes usar:
+Si prefieres un LED RGB común en lugar de 3 LEDs individuales, puedes usar 
+estas resistencias para reducir el brillo y ahorrar energía, estas son los 
+valores que yo he probado en los leds rgb que uso:
 - Rojo: 680 Ω
 - Azul: 680 Ω
 - Verde: 20 kΩ (para reducir brillo y consumo)
@@ -113,13 +197,6 @@ Para accionar una bomba de agua o la iluminación interior desde la Pico, utiliz
 Pines sugeridos (ver detalles en pinout.md):
 - 1 planta: GPIO 21 → Bomba (opcional), GPIO 22 → Luz interior (opcional).
 - 8 plantas: GPIO 0 → Bomba (opcional), GPIO 1 → Luz interior (opcional).
-
-### Entrada de señal externa a GPIO (trigger) – opcional
-
-Si quieres que una señal externa active funciones (p. ej., forzar encendido de luz o riego), conéctala a un GPIO configurado como entrada:
-- Niveles: la Pico trabaja a 3.3 V. Si la señal externa es 5/12 V, adapta con divisor resistivo u optoacoplador.
-- Pull‑ups/pull‑downs: usa Pin.PULL_UP o Pin.PULL_DOWN según el esquema. Ejemplo (contacto seco a GND): habilita PULL_UP y el contacto cierra a tierra para leer LOW.
-- Protección: añade resistencia en serie 1–10 kΩ y considera filtrado RC o software (debounce) si hay rebotes.
 
 ### Sensor de nivel de agua (boya) – opcional
 

@@ -1,17 +1,30 @@
 # Requisitos e Instalación
 
+
+
+
+
+## TODO: Enlazar a toda la documentación referenciada
+
+
+
+
+
+
+
+
+
 ## Requisitos de software
 - MicroPython 1.26 en Raspberry Pi Pico/Pico W.
 - Editor/IDE: Thonny, PyCharm, VS Code, etc.
 - (Opcional) Python en tu PC para herramientas auxiliares.
 
-## Requisitos de hardware
+## Requisitos de hardware mínimo
 - Raspberry Pi Pico (o Pico W para conectividad Wi‑Fi).
 - Sensor BME280 (I2C) para temperatura, humedad y presión.
 - Sensor de humedad de suelo (capacitivo analógico).
 - LEDs para indicadores (planta y sistema) y resistencias adecuadas.
 - (Opcional) ADS1115 por I2C (1 o 2 unidades) para múltiples plantas.
-- (Opcional) Batería y/o panel solar.
 - Cables, conectores JST, protoboard, etc.
 
 Consulta también docs/requeriments.md para un listado detallado.

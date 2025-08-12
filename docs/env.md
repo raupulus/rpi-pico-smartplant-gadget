@@ -2,6 +2,15 @@
 
 El archivo env.py define credenciales y preferencias de ejecución. No lo subas con datos reales a repositorios públicos. Mantén una plantilla local (p. ej. src/.env.example.py) y copia su contenido a env.py en tu entorno.
 
+
+
+
+
+## TODO: FALTAN VARIABLES DE ENTORNO POR DOCUMENTAR
+
+
+
+
 ## Variables disponibles
 - HOSTNAME: nombre del equipo (visible en la red Wi‑Fi).
 - AP_NAME: SSID principal de la red Wi‑Fi.

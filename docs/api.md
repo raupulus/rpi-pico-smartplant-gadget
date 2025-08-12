@@ -41,8 +41,44 @@ datos en la respuesta de la api.
       "name": "Planta 1",
       "optimal_temperature": 20,
       "optimal_soil_humidity": 20,
-      "optimal_air_humidity": 20,
-      "prefer_watering_time": [
+      "optimal_air_humidity": 20
+    },
+    {
+      "id": 2,
+      "adc": 1,
+      "name": "Planta 1",
+      "optimal_temperature": 28,
+      "optimal_soil_humidity": 46,
+      "optimal_air_humidity": 70
+    }
+  ],
+  "system": {
+    "has_water_pump": false,
+    "has_water_level_sensor": false,
+    "has_light_sensor": false,
+    "low_power_mode": false,
+    "watering_time_interval": 5,
+    "fan_time": [
+        {
+          "start": "09:00",
+          "end": "10:00"
+        },
+        {
+          "start": "17:30",
+          "end": "18:30"
+        }     
+      ],
+    "prefer_watering_time": [
+        {
+          "start": "09:00",
+          "end": "10:00"
+        },
+        {
+          "start": "17:30",
+          "end": "18:30"
+        }
+      ],
+    "light_time": [
         {
           "start": "09:00",
           "end": "10:00"
@@ -52,36 +88,6 @@ datos en la respuesta de la api.
           "end": "18:30"
         }
       ]
-    },
-    {
-      "id": 2,
-      "adc": 1,
-      "name": "Planta 1",
-      "optimal_temperature": 28,
-      "optimal_soil_humidity": 46,
-      "optimal_air_humidity": 70,
-      "prefer_watering_time": [
-        {
-          "start": "11:00",
-          "end": "12:00"
-        },
-        {
-          "start": "15:30",
-          "end": "14:30"
-        }
-      ]
-    }
-  ],
-  "light": {
-      "start": "06:00",
-      "end": "18:00",
-      "duration": 36000
-  },
-  "system": {
-    "has_water_pump": false,
-    "has_water_level_sensor": false,
-    "has_light_sensor": false,
-    "low_power_mode": false
   }
 }
 ```
@@ -98,14 +104,13 @@ system:
   minimiza tiempos de lecturas en sensores, subidas a la api y los leds 
   parpadean en lugar de encenderse.
 
-light:
-- start: Hora aproximada de encendido de la iluminación
-- end: Hora de apagado de la iluminación
-- duration: Tiempo en segundos que se debe encender la iluminación
-
 TODO: Plantear si esta configuración interesa guardarla en la memoria del 
 dispositivo. Esto permite usarse sin internet en el futuro manteniendo la misma
 configuración.
+
+TODO: Plantear si añadimos intervalo de riego, es decir, regará en el rango 
+de horas con preferencia pero durante el tiempo que indiquemos (por defecto 
+5 segundos)
 
 
 
@@ -118,7 +123,7 @@ Enviando información a la API
 ```json
 {
   "device": {
-    "chip_id": "rpi_pico_w_e661640843114021",
+    "device_id": "rpi_pico_w_e661640843114021",
     "firmware": "1.26.0",
     "hardware": "Raspberry Pi Pico",
     "temperature": 37,
@@ -134,31 +139,34 @@ Enviando información a la API
     {
       "id": 1,
       "adc": 0,
-      "temperature": 20,
-      "humidity": 20,
-      "soil_humidity": 20,
-      "pressure": 20,
-      "light": 20
+      "soil_humidity": 20
     },
     {
       "id": 2,
       "adc": 1,
-      "temperature": 20,
-      "humidity": 20,
-      "soil_humidity": 20,
-      "pressure": 20,
-      "light": 20
+      "soil_humidity": 20
     }
   ],
   "system": {
+    "fan_on": null,
+    "light_on": null,
     "water_level_correct": null
+  },
+  "temperature": 20,
+  "humidity": 20,
+  "pressure": 20,
+  "light": {
+    "uv_index": 0,
+    "lux": 0,
+    "uva": 0,
+    "uvb": 0
   }
 }
 ```
 
 Device:
 
-- chip_id: Se obtiene del dispositivo, machine.unique_id() en bytes (Se sube 
+- device_id: Se obtiene del dispositivo, machine.unique_id() en bytes (Se sube 
   ese valor convertido a hexadecimal como string: ubinascii.hexlify
   (unique_id).decode()). Esto permite identificar el dispositivo en la API. 
   Además, se añade delante "rpi_pico_w_" para evitar colisiones entre otros 
@@ -183,10 +191,3 @@ system
     }
 }
 ```
-
-## Wifi
-
-## Conexión a la red Principal
-
-## Configurar wifi con múltiples AP auxiliares (por si falla el principal)
-
