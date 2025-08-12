@@ -1,8 +1,15 @@
-from machine import ADC, Pin, SPI, I2C, RTC, deepsleep
+from machine import ADC, Pin, SPI, I2C, RTC, deepsleep, unique_id
 import network
 import ntptime
 from time import sleep_ms
 import time
+import ubinascii
+
+# Intento importar variables de entorno si existen
+try:
+    import env as ENV
+except Exception:
+    ENV = None
 
 # Constants
 WIFI_DISCONNECTED = 0
@@ -108,6 +115,18 @@ class RpiPico:
 
         self.cpu_temperature_reset_stats()
         self.locked = False
+
+    def get_id(self):
+        """
+        Devuelve el ID del chip.
+        """
+        # ID único del chip como bytes
+        id = unique_id()
+
+        # Convierto a hexadecimal para usar como string
+        unique_id_hex = ubinascii.hexlify(id).decode()
+
+        return 'rpi_pico_w_' + unique_id_hex
 
     def set_callback_to_pin(self, pin_number, callback, event="HIGH"):
         """
@@ -590,29 +609,104 @@ class RpiPico:
         min_voltage = self.external_battery["threshold_voltage_min"]
         max_voltage = self.external_battery["threshold_voltage_max"]
         adc = self.external_battery["adc"]
-        adc_value = adc.read_u16()
+        r1 = self.external_battery.get("divider_r1_ohms", 100000)
+        r2 = self.external_battery.get("divider_r2_ohms", 100000)
+        calib_scale = self.external_battery.get("calibration_scale", 1.0)
+        calib_offset = self.external_battery.get("calibration_offset", 0.0)
+        estimation_alpha = self.external_battery.get("estimation_alpha", 0.2)
 
-        # Convierto la lectura a voltaje
-        voltage = adc_value * (max_voltage / 65535)
+        adc_raw = adc.read_u16()
 
-        percentage_raw = ((voltage - min_voltage) / (max_voltage -  min_voltage)* 100)
+        # Voltaje en el pin ADC
+        adc_voltage = adc_raw * self.adc_conversion_factor
 
-        percentage =  max(0.0, min(percentage_raw, 100.0))
+        # Protejo división por cero si r2 no es válido
+        divider_ratio = (r1 + r2) / r2 if r2 else 1.0
 
-        self.external_battery["voltage_current"] = voltage
+        # Convierto a voltaje real de batería aplicando divisor y calibración
+        battery_voltage = (adc_voltage * divider_ratio)
+        battery_voltage = battery_voltage * calib_scale + calib_offset
+
+        # Porcentaje entre umbrales (valor instantáneo)
+        if max_voltage <= min_voltage:
+            percentage = 0.0
+        else:
+            percentage_raw = ((battery_voltage - min_voltage) / (max_voltage -  min_voltage) * 100.0)
+            percentage = max(0.0, min(percentage_raw, 100.0))
+
+        # Estimación mediante EMA
+        try:
+            alpha = float(estimation_alpha)
+        except Exception:
+            alpha = 0.2
+        if alpha <= 0.0 or alpha > 1.0:
+            alpha = 0.2
+
+        prev_est = self.external_battery.get("voltage_estimated")
+        if prev_est is None:
+            voltage_estimated = battery_voltage
+        else:
+            voltage_estimated = (alpha * battery_voltage) + ((1.0 - alpha) * prev_est)
+
+        # Porcentaje estimado
+        if max_voltage <= min_voltage:
+            percentage_estimated = 0.0
+        else:
+            percentage_estimated_raw = ((voltage_estimated - min_voltage) / (max_voltage -  min_voltage) * 100.0)
+            percentage_estimated = max(0.0, min(percentage_estimated_raw, 100.0))
+
+        # Actualizo métricas
+        self.external_battery["adc_raw"] = adc_raw
+        self.external_battery["adc_voltage"] = adc_voltage
+        self.external_battery["voltage_current"] = battery_voltage
         self.external_battery["voltage_percentage"] = percentage
+        self.external_battery["voltage_estimated"] = voltage_estimated
+        self.external_battery["voltage_percentage_estimated"] = percentage_estimated
 
-        if self.external_battery["voltage_min"] is None or voltage < self.external_battery["voltage_min"]:
-            self.external_battery["voltage_min"] = voltage
+        # Actualizar min/max de instantáneo
+        if self.external_battery["voltage_min"] is None or battery_voltage < self.external_battery["voltage_min"]:
+            self.external_battery["voltage_min"] = battery_voltage
             self.external_battery["voltage_percentage_min"] = percentage
 
-        if (self.external_battery["voltage_max"] is None or voltage > self.external_battery["voltage_max"]):
-            self.external_battery["voltage_max"] = voltage
+        if (self.external_battery["voltage_max"] is None or battery_voltage > self.external_battery["voltage_max"]):
+            self.external_battery["voltage_max"] = battery_voltage
             self.external_battery["voltage_percentage_max"] = percentage
+
+        # Actualizar min/max estimados
+        if self.external_battery.get("voltage_estimated_min") is None or voltage_estimated < self.external_battery["voltage_estimated_min"]:
+            self.external_battery["voltage_estimated_min"] = voltage_estimated
+            self.external_battery["voltage_percentage_estimated_min"] = percentage_estimated
+
+        if self.external_battery.get("voltage_estimated_max") is None or voltage_estimated > self.external_battery["voltage_estimated_max"]:
+            self.external_battery["voltage_estimated_max"] = voltage_estimated
+            self.external_battery["voltage_percentage_estimated_max"] = percentage_estimated
 
         return self.external_battery
 
     def set_external_battery(self, pin, threshold_voltage_min=2.5, threshold_voltage_max=4.2):
+        # Cargo configuración desde ENV si existe
+        r1 = 100000
+        r2 = 100000
+        calib_scale = 1.0
+        calib_offset = 0.0
+        estimation_alpha = 0.2
+
+        if ENV:
+            r1 = getattr(ENV, 'BATTERY_DIVIDER_R1_OHMS', r1)
+            r2 = getattr(ENV, 'BATTERY_DIVIDER_R2_OHMS', r2)
+            calib_scale = getattr(ENV, 'BATTERY_ADC_CALIBRATION_SCALE', calib_scale)
+            calib_offset = getattr(ENV, 'BATTERY_ADC_CALIBRATION_OFFSET', calib_offset)
+            estimation_alpha = getattr(ENV, 'BATTERY_ESTIMATION_ALPHA', estimation_alpha)
+
+            # Si el usuario definió umbrales en ENV, los respetamos si no se sobrepasan explícitamente
+            try:
+                if threshold_voltage_min == 2.5 and hasattr(ENV, 'BATTERY_MIN_VOLTAGE'):
+                    threshold_voltage_min = float(ENV.BATTERY_MIN_VOLTAGE)
+                if threshold_voltage_max == 4.2 and hasattr(ENV, 'BATTERY_MAX_VOLTAGE'):
+                    threshold_voltage_max = float(ENV.BATTERY_MAX_VOLTAGE)
+            except Exception:
+                pass
+
         self.external_battery = {
             "pin": pin,
             "adc": ADC(pin),
@@ -624,9 +718,29 @@ class RpiPico:
             "voltage_percentage": None,
             "voltage_percentage_min": None,
             "voltage_percentage_max": None,
+            "divider_r1_ohms": r1,
+            "divider_r2_ohms": r2,
+            "calibration_scale": calib_scale,
+            "calibration_offset": calib_offset,
+            "estimation_alpha": estimation_alpha,
+            # Valores estimados y sus extremos
+            "voltage_estimated": None,
+            "voltage_estimated_min": None,
+            "voltage_estimated_max": None,
+            "voltage_percentage_estimated": None,
+            "voltage_percentage_estimated_min": None,
+            "voltage_percentage_estimated_max": None,
         }
 
         self.read_external_battery()
+
+    def get_battery_stats(self):
+        datas = self.read_external_battery()
+
+        return {
+            "voltage": round(datas.get('voltage_current'), 2),
+            "percentage": round(datas.get('voltage_percentage'), 1),
+        }
 
     def sync_rtc_time (self):
         """Configures the Raspberry Pi Pico's RTC with the current time obtained from the API."""
