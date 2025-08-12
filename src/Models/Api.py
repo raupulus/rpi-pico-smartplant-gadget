@@ -4,6 +4,9 @@
 import urequests
 import ujson
 
+
+## TODO: Revisar, ya no existe hardware_device_id
+
 class Api:
     """
     A class representing an API connection with methods to interact with the endpoint.

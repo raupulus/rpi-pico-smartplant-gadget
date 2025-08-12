@@ -124,7 +124,8 @@ Enviando información a la API
 {
   "device": {
     "device_id": "rpi_pico_w_e661640843114021",
-    "firmware": "1.26.0",
+    "firmware": "3.4.0",
+    "micropython": "1.26.0",
     "hardware": "Raspberry Pi Pico",
     "temperature": 37,
     "battery": 86,
@@ -150,11 +151,14 @@ Enviando información a la API
   "system": {
     "fan_on": null,
     "light_on": null,
+    "water_motor_on": null,
     "water_level_correct": null
   },
-  "temperature": 20,
-  "humidity": 20,
-  "pressure": 20,
+  "weather": {
+      "temperature": 20,
+      "humidity": 20,
+      "pressure": 20
+  },
   "light": {
     "uv_index": 0,
     "lux": 0,

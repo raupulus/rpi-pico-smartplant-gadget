@@ -4,6 +4,7 @@ import ntptime
 from time import sleep_ms
 import time
 import ubinascii
+import sys
 
 # Intento importar variables de entorno si existen
 try:
@@ -115,6 +116,68 @@ class RpiPico:
 
         self.cpu_temperature_reset_stats()
         self.locked = False
+
+    def get_versions(self):
+        version_string = sys.version
+        firmware = "unknown"
+        micropython = "unknown"
+
+        try:
+            # Para firmware: buscar el patrón '3.4.0;
+            if ";" in version_string:
+                parts = version_string.split(";")
+                for part in parts:
+                    if (
+                        part.strip()
+                        .replace("'", "")
+                        .replace('"', "")
+                        .replace("firmware: ", "")
+                    ):
+                        # Extraer solo números y puntos
+                        import re
+
+                        match = re.search(r"(\d+\.\d+\.\d+)", part)
+                        if match:
+                            firmware = match.group(1)
+                            break
+
+            # Para MicroPython
+            if "MicroPython v" in version_string:
+                start = version_string.find("MicroPython v") + len("MicroPython v")
+                end = version_string.find(" ", start)
+                micropython = (
+                    version_string[start:end] if end != -1 else version_string[start:]
+                )
+
+        except:
+            pass
+
+        return firmware, micropython
+
+    def get_device_info(self):
+        """
+        Devuelve la información del dispositivo.
+        :return:
+        """
+
+        battery = self.get_battery_stats()
+
+        firmware, micropython = self.get_versions()
+
+        return {
+            "device_id": self.get_id(),
+            "firmware": firmware,
+            "micropython": micropython,
+            "hardware": "Raspberry Pi Pico W",
+            "temperature": 37,
+            "battery": battery.get('percentage'),
+            "battery_voltage": battery.get('voltage'),
+            "uptime": int(time.ticks_ms() / 1000),
+            "mac_address": self.get_wireless_mac(),
+            "wifi_rssi": self.get_wireless_rssi(),
+            "wifi_ssid": self.get_wireless_ssid(),
+            "wifi_ip": self.get_wireless_ip(),
+        }
 
     def get_id(self):
         """
