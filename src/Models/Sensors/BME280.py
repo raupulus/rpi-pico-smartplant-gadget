@@ -44,7 +44,7 @@ class BME280:
     BME280_REGISTER_TEMPDATA = 0xFA
     BME280_REGISTER_HUMIDDATA = 0xFD
 
-    def __init__(self, rpi=None, i2c=None, address=None, i2c_bus=None):
+    def __init__(self, rpi=None):
         """
         Inicializa el sensor BME280
         
@@ -57,25 +57,14 @@ class BME280:
         self.rpi = rpi
         
         # Configuración desde ENV
-        self.address = address if address is not None else getattr(ENV, 'BME280_ADDRESS', self.BME280_I2CADDR)
-        self.i2c_bus = i2c_bus if i2c_bus is not None else getattr(ENV, 'BME280_I2C_BUS', 1)
+        self.address = getattr(ENV, 'BME280_ADDRESS', self.BME280_I2CADDR)
         self.correction_temp = getattr(ENV, 'BME280_CORRECTION_TEMPERATURE', 0.0)
         self.correction_pressure = getattr(ENV, 'BME280_CORRECTION_PRESSURE', 0.0)
         self.correction_humidity = getattr(ENV, 'BME280_CORRECTION_HUMIDITY', 0.0)
         self.sample_delay_ms = getattr(ENV, 'BME280_SAMPLE_DELAY_MS', 500)
         
-        # Configurar I2C
-        if i2c is not None:
-            self.i2c = i2c
-        elif rpi is not None:
-            # Intentar usar I2C del RPI si está disponible
-            if hasattr(rpi, f'i2c{self.i2c_bus}'):
-                self.i2c = getattr(rpi, f'i2c{self.i2c_bus}')
-            else:
-                # Configurar I2C por defecto (pins estándar para bus 1: SDA=14, SCL=15)
-                sda_pin = 14 if self.i2c_bus == 1 else 20
-                scl_pin = 15 if self.i2c_bus == 1 else 21
-                self.i2c = rpi.set_i2c(sda_pin, scl_pin, self.i2c_bus, 400000)
+        if rpi is not None:
+            self.i2c = rpi.i2c0
         else:
             raise ValueError("Se requiere instancia RPI o I2C para inicializar BME280")
         
@@ -122,42 +111,84 @@ class BME280:
         except Exception as e:
             raise RuntimeError(f"Error escribiendo registro {register}: {e}")
 
+    def _read_u8(self, register):
+        """Lee un byte sin signo del registro especificado"""
+        result = self._read_register(register, 1)
+        return struct.unpack('<B', result)[0]
+
+    def _read_s8(self, register):
+        """Lee un byte con signo del registro especificado"""
+        result = self._read_u8(register)
+        if result > 127:
+            result -= 256
+        return result
+
+    def _read_u16_le(self, register):
+        """Lee un valor de 16 bits sin signo en little endian"""
+        result = self._read_register(register, 2)
+        return struct.unpack('<H', result)[0]
+
+    def _read_s16_le(self, register):
+        """Lee un valor de 16 bits con signo en little endian"""
+        result = self._read_register(register, 2)
+        return struct.unpack('<h', result)[0]
+
     def _read_calibration(self):
-        """Lee los datos de calibración del sensor"""
-        # Leer coeficientes de temperatura y presión
-        cal = self._read_register(self.BME280_REGISTER_DIG_T1, 24)
+        """Lee los datos de calibración del sensor usando lecturas individuales"""
+        # Leer coeficientes de temperatura (T1-T3) - mismo para BME280 y BMP280
+        self.dig_t1 = self._read_u16_le(self.BME280_REGISTER_DIG_T1)
+        self.dig_t2 = self._read_s16_le(self.BME280_REGISTER_DIG_T2)
+        self.dig_t3 = self._read_s16_le(self.BME280_REGISTER_DIG_T3)
         
-        # Desempacar datos de calibración T1-T3 (unsigned/signed short)
-        self.dig_t1, self.dig_t2, self.dig_t3 = struct.unpack('<HhH', cal[0:6])
+        # Leer coeficientes de presión (P1-P9) - mismo para BME280 y BMP280
+        self.dig_p1 = self._read_u16_le(self.BME280_REGISTER_DIG_P1)
+        self.dig_p2 = self._read_s16_le(self.BME280_REGISTER_DIG_P2)
+        self.dig_p3 = self._read_s16_le(self.BME280_REGISTER_DIG_P3)
+        self.dig_p4 = self._read_s16_le(self.BME280_REGISTER_DIG_P4)
+        self.dig_p5 = self._read_s16_le(self.BME280_REGISTER_DIG_P5)
+        self.dig_p6 = self._read_s16_le(self.BME280_REGISTER_DIG_P6)
+        self.dig_p7 = self._read_s16_le(self.BME280_REGISTER_DIG_P7)
+        self.dig_p8 = self._read_s16_le(self.BME280_REGISTER_DIG_P8)
+        self.dig_p9 = self._read_s16_le(self.BME280_REGISTER_DIG_P9)
         
-        # Desempacar datos de calibración P1-P9
-        self.dig_p1, self.dig_p2, self.dig_p3, self.dig_p4, self.dig_p5, self.dig_p6, self.dig_p7, self.dig_p8, self.dig_p9 = struct.unpack('<HhhhhhhhhH', cal[6:24])
-        
-        # Leer H1
-        self.dig_h1 = struct.unpack('<B', self._read_register(self.BME280_REGISTER_DIG_H1))[0]
-        
-        # Leer H2-H6
-        cal_h = self._read_register(self.BME280_REGISTER_DIG_H2, 7)
-        self.dig_h2 = struct.unpack('<h', cal_h[0:2])[0]
-        self.dig_h3 = struct.unpack('<B', cal_h[2:3])[0]
-        
-        # H4 y H5 están divididos entre dos registros
-        self.dig_h4 = (cal_h[3] << 4) | (cal_h[4] & 0x0F)
-        if self.dig_h4 & 0x800:
-            self.dig_h4 -= 4096
-        
-        self.dig_h5 = (cal_h[5] << 4) | (cal_h[4] >> 4)
-        if self.dig_h5 & 0x800:
-            self.dig_h5 -= 4096
-        
-        self.dig_h6 = struct.unpack('<b', cal_h[6:7])[0]
+        if self.is_bmp280:
+            # BMP280 no tiene sensores de humedad - usar valores por defecto
+            self.dig_h1 = 0
+            self.dig_h2 = 0
+            self.dig_h3 = 0
+            self.dig_h4 = 0
+            self.dig_h5 = 0
+            self.dig_h6 = 0
+        else:
+            # BME280 coeficientes de humedad
+            self.dig_h1 = self._read_u8(self.BME280_REGISTER_DIG_H1)
+            self.dig_h2 = self._read_s16_le(self.BME280_REGISTER_DIG_H2)
+            self.dig_h3 = self._read_u8(self.BME280_REGISTER_DIG_H3)
+            
+            # H4 y H5 tienen manejo especial según el ejemplo de trabajo
+            h4 = self._read_s8(self.BME280_REGISTER_DIG_H4)
+            h4 = (h4 << 24) >> 20
+            self.dig_h4 = h4 | (self._read_u8(self.BME280_REGISTER_DIG_H5) & 0x0F)
+            
+            h5 = self._read_s8(self.BME280_REGISTER_DIG_H6)
+            h5 = (h5 << 24) >> 20
+            self.dig_h5 = h5 | (self._read_u8(self.BME280_REGISTER_DIG_H5) >> 4 & 0x0F)
+            
+            self.dig_h6 = self._read_s8(self.BME280_REGISTER_DIG_H6)
 
     def _init_sensor(self):
-        """Inicializa el sensor BME280"""
+        """Inicializa el sensor BME280/BMP280"""
         # Verificar chip ID
         chip_id = struct.unpack('<B', self._read_register(self.BME280_REGISTER_CHIPID))[0]
-        if chip_id != 0x60:
-            raise RuntimeError(f"Chip ID incorrecto: {chip_id:02x}, esperado: 0x60")
+        
+        # Soportar tanto BME280 (0x60) como BMP280 (0x58)
+        valid_chip_ids = [0x60, 0x58]  # BME280, BMP280
+        if chip_id not in valid_chip_ids:
+            raise RuntimeError(f"Chip ID no soportado: 0x{chip_id:02x}, esperados: 0x60 (BME280) o 0x58 (BMP280)")
+        
+        # Detectar tipo de sensor
+        self.is_bmp280 = (chip_id == 0x58)
+        self.sensor_type = "BMP280" if self.is_bmp280 else "BME280"
         
         # Leer calibración
         self._read_calibration()
@@ -272,8 +303,12 @@ class BME280:
         Obtiene la humedad relativa en %
         
         Returns:
-            float: Humedad relativa en %
+            float: Humedad relativa en % (BME280) o None (BMP280)
         """
+        # BMP280 no tiene sensor de humedad
+        if self.is_bmp280:
+            return None
+            
         temp_raw, _, hum_raw = self._read_raw_data()
         # Necesitamos calcular temperatura primero para obtener t_fine
         self._compensate_temperature(temp_raw)
@@ -295,31 +330,45 @@ class BME280:
         Obtiene todos los datos del sensor en un solo diccionario
         
         Returns:
-            dict: Diccionario con temperatura, presión y humedad
+            dict: Diccionario con temperatura, presión y humedad (None para BMP280)
         """
         temp_raw, pres_raw, hum_raw = self._read_raw_data()
         
         # Calcular temperatura primero para obtener t_fine
         temperature = self._compensate_temperature(temp_raw)
         pressure = self._compensate_pressure(pres_raw)
-        humidity = self._compensate_humidity(hum_raw)
         
-        # Aplicar correcciones
+        # BMP280 no tiene sensor de humedad
+        if self.is_bmp280:
+            humidity = None
+        else:
+            humidity = self._compensate_humidity(hum_raw)
+            # Aplicar corrección de humedad si está configurada
+            if self.correction_humidity != 0:
+                humidity += self.correction_humidity
+                # Mantener humedad en rango válido
+                if humidity > 100.0:
+                    humidity = 100.0
+                elif humidity < 0.0:
+                    humidity = 0.0
+        
+        # Aplicar correcciones para temperatura y presión
         if self.correction_temp != 0:
             temperature += self.correction_temp
         if self.correction_pressure != 0:
             pressure += self.correction_pressure
-        if self.correction_humidity != 0:
-            humidity += self.correction_humidity
-            # Mantener humedad en rango válido
-            if humidity > 100.0:
-                humidity = 100.0
-            elif humidity < 0.0:
-                humidity = 0.0
         
-        return {
+        result = {
             'temperature': round(temperature, 2),
             'pressure': round(pressure, 2),
-            'humidity': round(humidity, 2),
-            'timestamp_ms': time.ticks_ms()
+            'sensor_type': self.sensor_type,
+            #'timestamp_ms': time.ticks_ms()
         }
+        
+        # Solo agregar humedad si no es None
+        if humidity is not None:
+            result['humidity'] = round(humidity, 2)
+        else:
+            result['humidity'] = None
+            
+        return result
