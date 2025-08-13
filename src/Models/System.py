@@ -29,16 +29,18 @@ class System:
         "pin": env.WATER_LEVEL_SENSOR_PIN
     }
 
-    # Mediciones fijas
+    # Sensores
     weather_sensor = None
     light_senor = None
 
+    # Datos del clima
     weather = {
         "temperature": None,
         "humidity": None,
         "pressure": None
     }
 
+    # Datos de la luz
     light = {
         "lux": None,
         "uv_index": None,
@@ -103,10 +105,16 @@ class System:
 
 
     def read_sensors(self):
+        """
+        Lee los datos de los sensores y los guarda en las variables de la clase.
+        :return:
+        """
 
-        # self.weather_sensor.stats()
-        # if self.light_sensor -> self.light_sensor.stats()
-        pass
+        if self.weather_sensor:
+            self.weather = self.weather_sensor.get_all_data()
+
+        if self.light_sensor:
+            self.light = self.light_sensor.get_all_data()
 
     def get_info(self):
         """
@@ -124,5 +132,7 @@ class System:
             "water_level_correct": self.water_level.get('active'),
             "weather": self.weather,
             "light": self.light,
-            "need_api_sync": self.need_api_sync
+            "need_api_sync": self.need_api_sync,
+            "plants": None
+
         }

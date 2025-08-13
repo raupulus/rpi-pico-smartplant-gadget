@@ -2,7 +2,7 @@ import gc
 from time import sleep_ms
 from Models.Api import Api
 from Models.RpiPico import RpiPico
-#from Models.Sensors.BME280 import BME280
+from Models.Sensors.BME280 import BME280
 from Models.Sensors.SoilMoisture import SoilMoisture
 from Models.System import System
 from functions import log
@@ -17,7 +17,7 @@ DEBUG = env.DEBUG
 
 # Rpi Pico Model Instance
 rpi = RpiPico(ssid=env.AP_NAME, password=env.AP_PASS, debug=DEBUG,
-                     alternatives_ap=env.ALTERNATIVES_AP, hostname=env.HOSTNAME)
+              alternatives_ap=env.ALTERNATIVES_AP, hostname=env.HOSTNAME)
 
 sleep_ms(100)
 
@@ -27,11 +27,7 @@ rpi.wifi_debug()
 sleep_ms(100)
 
 # Ejemplo instanciando I2C en bus 0.
-# i2c0 = rpi.set_i2c(20, 21, 0, 400000)
-# address = 0x03 # Dirección de un dispositivo i2c
-# Ya podemos usar nuestro sensor con la dirección almacenada en "address"
-
-# Ejemplo escaneando todos los dispositivos encontrados por I2C.
+i2c0 = rpi.set_i2c(4, 5, 0, 400000)
 # print('Dispositivos encontrados por I2C:', i2c0.scan())
 
 # Ejemplo asociando un callback al recibir +3.3v en el gpio 2
@@ -61,15 +57,32 @@ while not rpi.sync_rtc_time():
 
     sleep_ms(30000)
 
-# Pausa preventiva al desarrollar (ajustar, pero si usas dos hilos puede ahorrar tiempo por bloqueos de hardware ante errores)
-sleep_ms(3000)
 """
 
+# Pausa preventiva al desarrollar (ajustar, pero si usas dos hilos puede ahorrar tiempo por bloqueos de hardware ante errores)
+if env.DEBUG:
+    sleep_ms(2000)
+
+
+weather = None
+
+if env.BME280:
+    weather = BME280(rpi=rpi)
+
+soil = SoilMoisture(rpi, pin=27)
+soil_ads1115_1 = None
+soil_ads1115_2 = None
+
+if env.ADS1115:
+    #soil_ads1115_1 = ADS1115(rpi)
+    pass
+
+if env.ADS1115_2:
+    #soil_ads1115_2 = ADS1115(rpi)
+    pass
 
 ## Entidad para el sistema
-system = System(rpi)
-
-
+system = System(rpi, weather_sensor=weather, light_sensor=None)
 
 def thread1 ():
     """
@@ -87,9 +100,6 @@ def thread1 ():
         print('Inicia hilo principal (thread1)')
 
 
-soil = SoilMoisture(rpi, pin=27)
-
-
 def thread0 ():
     """
     Primer hilo, flujo principal de la aplicación.
@@ -101,43 +111,12 @@ def thread0 ():
 
     log("Sistema: ", system.get_info())
 
-    log(f"ID único del chip rpi pico: {rpi.get_id()}")
-    log("Temperatura raspberry pi pico:", str(rpi.get_cpu_temperature()))
-
-    if env.DEBUG:
-        log("Batería externa:", rpi.get_battery_stats())
-
-    print("=== Prueba del sensor de humedad ===")
+    print("=== Prueba del sensor de humedad en Tierra ===")
 
     # Usando la nueva clase SoilMoisture con el ADC interno en el pin 27
     for _ in range(12):
         log("Soil Moisture (analog):", soil.read_analog())
         sleep_ms(100)
-
-    if env.BME280:
-        print("=== Prueba del sensor BME280 ===")
-        try:
-            # Inicializar el sensor BME280
-            bme = BME280(rpi=rpi)
-            log("BME280 inicializado correctamente")
-            sleep_ms(env.BME280_SAMPLE_DELAY_MS)
-
-            # Leer todos los datos de una vez
-            all_data = bme.get_all_data()
-            log("Datos completos BME280:", all_data)
-            sleep_ms(200)
-
-            # Leer datos individuales
-            temperature = bme.get_temperature()
-            humidity = bme.get_humidity()
-            pressure = bme.get_pressure()
-
-            log(f"Temperatura: {temperature}°C")
-            log(f"Humedad: {humidity}%")
-            log(f"Presión: {pressure} hPa")
-
-        except Exception as e:
-            log(f"Error con sensor BME280: {e}")
 
     # Probando módulos adc ADS1115
     if (env.ADS1115):
