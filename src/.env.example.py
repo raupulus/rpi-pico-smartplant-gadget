@@ -29,15 +29,15 @@ BATTERY_ESTIMATION_ALPHA = 0.1  # Factor de suavizado EMA para estimar voltaje (
 
 ## Iluminación
 LIGHT_CONTROL = False ## Indica si se activa una señal de GPIO para iluminación de plantas en interior
-LIGHT_CONTROL_PIN = 22 ## Pin que da la señal de iluminación
+LIGHT_CONTROL_PIN = 1 ## Pin que da la señal de iluminación
 
 ## Motor de agua para riego
 WATERING_MOTOR = False ## Indica si se activa el motor de agua para riego
-WATERING_MOTOR_PIN = 21 ## Pin GPIO que activa el motor
+WATERING_MOTOR_PIN = 0 ## Pin GPIO que activa el motor
 
 ## Boya para detectar nivel de agua
 WATER_LEVEL_SENSOR = False ## Indica si se activa el sensor de nivel de agua
-WATER_LEVEL_SENSOR_PIN = 23 ## Pin GPIO que detecta el nivel de agua
+WATER_LEVEL_SENSOR_PIN = 2 ## Pin GPIO que detecta el nivel de agua
 
 ## Control de cantidad de plantas
 ADS1115 = False ## Indica si está habilitado. Si no está, se utilizará ADC interno de la RPI
@@ -66,8 +66,11 @@ BME280_SAMPLE_DELAY_MS = 500
 
 ## Ventilador
 FAN = False
-FAN_PIN = 99
+FAN_PIN = 3
 
+## Humidificador
+HUMIDIFIER = False ## Indica si se activa el humidificador
+HUMIDIFIER_PIN = 8 ## Pin GPIO que activa el humidificador
 
 # Indica si está en modo debug la aplicación
 DEBUG = False
