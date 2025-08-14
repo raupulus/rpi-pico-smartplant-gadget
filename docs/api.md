@@ -56,8 +56,10 @@ datos en la respuesta de la api.
     "has_water_pump": false,
     "has_water_level_sensor": false,
     "has_light_sensor": false,
-    "low_power_mode": false,
+    "has_humidifier": false,
+    "low_power_mode": true,
     "watering_time_interval": 5,
+    "humidifier_minimal_humidity": 30,
     "fan_time": [
         {
           "start": "09:00",
@@ -152,6 +154,7 @@ Enviando información a la API
     "fan_on": null,
     "light_on": null,
     "water_motor_on": null,
+    "humidifier_on": null,
     "water_level_correct": null
   },
   "weather": {
