@@ -2,7 +2,6 @@
 
 
 ## TODO: Poner imágenes de referencia que ya las tengo
-## TODO: Preparar ventilador información
 
 
 
@@ -110,6 +109,8 @@ Este chip necesita ser alimentado a 5v, los estafadores que lo venden ponen
 que se pueden alimentar a 3,3v, pero no funcionan bien. Dan salida 3,3v en 
 seco por aout pero no tiene corriente para funcionar y no varía en mojado.
 
+![Sensor de humedad del suelo](images/hardware/sensor-soil-moisture-bad-chip-ne555.jpg)
+
 En mi caso, las lecturas alimentados a 5v tenían un rango de salida 
 analógica de 3,7v a 2,5v por lo que con un divisor de tensión en la salida 
 pude convertirlas a 3,3v o menos (si compras uno así, pide reembolso 
@@ -129,7 +130,21 @@ reutilizar este esquema para otros sensores aunque varíe un poco la tensión
 de salida. Yo los sueldo directamente en el sensor por lo que corto con un 
 cúter la pista de salida analógica y puenteo directamente a la salida de R4.
 
+Esta fue mi solución y sinceramente me han ido funcionando bien pero es 
+importante que reclames si te llega uno así para que te devuelvan el dinero 
+y no sigan vendiendo esta basura libremente. Hacerlos bien solo cuesta céntimos.
+
+Este es un ejemplo de mis sensores con el divisor de tensión apropiado para 
+cada uno calculado de forma independiente:
+
+![Sensor de humedad del suelo](images/hardware/sensor-soil-moisture-bad-chip-ne555-fixed.jpeg)
+
+
 ## BME280
+
+Este es el sensor que recomiendo, es preciso y duradero en interiores.
+Para exteriores quizás valoraría usar otros (creo que el dht20 podría durar más tiempo)
+ya que en humedad superior a 85% durante tiempos prolongados puede dañarlos.
 
 ![Sensor BME280](images/hardware/sensor-bosh-bme280-temperatura-humedad-presion.jpeg)
 
@@ -137,6 +152,17 @@ cúter la pista de salida analógica y puenteo directamente a la salida de R4.
 
 - Conecta el sensor a GND y VCC.
 - Conecta el sensor a SDA y SCL.
+
+## BMP280
+
+Puedes utilizar el BMP280 en lugar del BME280 pero ojo, este no mide la 
+humedad en el ambiente y puede ser bastante interesante para detectar 
+cambios en la humedad del ambiente.
+
+![Sensor BME280](images/hardware/sensor-bosh-bmp280.jpeg)
+
+Se cablea exactamente igual que el BME280 y funciona igual excepto que 
+el sensor no mide la humedad.
 
 
 ### Divisor de tensión (monitorización de batería)
@@ -187,6 +213,8 @@ Notas:
   otros valores posibles en base a los que tú vayas a usar y deberías 
   calibrarlos en tu propio proyecto.
 
+![Led RGB 4 patillas](images/hardware/led-rgb-4-pines-pinout.jpeg)
+
 ### Control de actuadores (bomba de agua e iluminación) – opcional
 
 Para accionar una bomba de agua o la iluminación interior desde la Pico, utiliza un GPIO como salida conectado a un módulo de relé o a un transistor MOSFET de nivel lógico (3.3 V):
@@ -195,7 +223,7 @@ Para accionar una bomba de agua o la iluminación interior desde la Pico, utiliz
 - Seguridad: separa alimentación de cargas de la lógica, usa fusible adecuado, dimensiona cables y nunca superes las especificaciones del módulo.
 
 Pines sugeridos (ver detalles en pinout.md):
-- 1 planta: GPIO 21 → Bomba (opcional), GPIO 22 → Luz interior (opcional).
+- 1 planta: GPIO 0 → Bomba (opcional), GPIO 1 → Luz interior (opcional).
 - 8 plantas: GPIO 0 → Bomba (opcional), GPIO 1 → Luz interior (opcional).
 
 ### Sensor de nivel de agua (boya) – opcional
@@ -207,7 +235,7 @@ Un sensor tipo boya funciona como un interruptor (normalmente abierto o cerrado)
 - Seguridad: si el depósito controla el motor de riego, corta el riego cuando el nivel indique “bajo”.
 
 Pines sugeridos (ver detalles en pinout.md):
-- 1 planta: GPIO 23 (recomendado para evitar conflictos con LED API en GPIO 20). Configurable vía WATER_LEVEL_SENSOR_PIN.
+- 1 planta: GPIO 2. Configurable vía WATER_LEVEL_SENSOR_PIN.
 - 8 plantas: GPIO 2 (opcional y libre en el esquema propuesto).
 
 ### Monitorización de batería con ADC interno – opcional

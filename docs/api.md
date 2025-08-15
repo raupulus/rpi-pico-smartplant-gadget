@@ -1,5 +1,13 @@
 # Comunicación con la API
 
+
+
+TODO: Cuando se termine la definición completa de la parte API, detallar 
+cada parámetro de este documento.
+
+
+
+
 ## Recibiendo datos
 
 Recibe la configuración de la API

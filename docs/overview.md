@@ -8,6 +8,7 @@ Recopila datos ambientales (temperatura, humedad relativa, presión) y de humeda
 - Permitir configuración remota desde la API (intervalos, rangos óptimos, preferencias de riego).
 - Proveer diagnóstico visual mediante LEDs de planta y de sistema.
 - Optimizar el consumo energético y soportar alimentación por batería/solar.
+- Activar ventilador, luz, bomba de agua o humidificador. Todos opcionales.
 
 ## Contextos de uso
 - 1 planta: usa el ADC interno de la Raspberry Pi Pico.

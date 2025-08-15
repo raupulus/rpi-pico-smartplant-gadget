@@ -15,6 +15,7 @@
 
 ## Hardware para 1–4 plantas
 - Todo lo anterior, excepto:
+  - 3 LEDs por planta (Verde/Azul/Rojo) + resistencias adecuadas
   - 1× ADS1115 (I2C) para 4 entradas analógicas
 
 ## Hardware para 4–8 plantas

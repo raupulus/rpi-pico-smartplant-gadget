@@ -7,7 +7,7 @@
   - Sensor de humedad de suelo (ADC interno o ADS1115)
 - ADC externo (opcional): ADS1115 (1 o 2 unidades) vía I2C
 - Indicadores LED:
-  - Por planta: 2 para 1-4 plantas y 3 LEDs para más de 4 plantas
+  - Por planta: 3 LEDs para 1-4 plantas y 2 LEDs para 4-8 plantas
   - De sistema: Encendido y Comunicación API
   - Puede ser 1 LED RGB o 3 LEDs independientes.
 - Conectividad: Wi‑Fi (en Pico W) para sincronización con API
@@ -48,7 +48,7 @@ Estos componentes se pueden añadir de forma opcional e independiente.
 - Models/Api.py: comunicación y formatos con la API
 - Models/Plant.py: lógica de planta (umbrales, estados)
 - Models/Location.py: datos de ubicación/tiempo recibidos de la API
-- ???? HUERTO???? Entidad para agrupar todos los datos de las plantas?????
-- 
+- Models/System.py Entidad para agrupar todos los datos de las plantas y el 
+  sistema de control general.
 
 Consulta docs/operation.md para estados operativos y docs/api.md para formatos de API.

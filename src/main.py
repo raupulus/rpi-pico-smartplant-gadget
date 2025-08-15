@@ -64,8 +64,23 @@ if env.DEBUG:
     sleep_ms(2000)
 
 
+
+# TODO Comprobar si se han pulsado 1 botón para entrar en modo configuración
+# Este modo por ejemplo pondría 2,3 pines GPIO escuchando durante 2 segundos en
+# el arranque (podría ser led de api y sistema, no quedan más pines libres). En
+# caso de estar en alto entraría en modo configuración activando bluetooth para
+# conectar desde nuestro dispositivo y poder así configurar red wireless la
+# primera vez que nos conectamos para evitar que usuarios finales tengan que
+# conectar la placa a su pc y editar archivo de variables.
+mode_config = False
+
+if mode_config:
+    pass
+
+
 weather = None
 
+## TODO: cargar con try-catch
 if env.BME280:
     weather = BME280(rpi=rpi)
 
